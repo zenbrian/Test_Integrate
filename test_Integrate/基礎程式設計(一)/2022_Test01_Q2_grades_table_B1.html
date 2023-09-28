@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grades Table B2</title>
+    <style>
+      div {
+        width: 80%;
+        margin: 1% auto;
+      }
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #cccccc;
+        text-align: right;
+        padding: 6px;
+      }
+
+      tr:nth-child(odd) {
+        background-color: #F5F5F5;
+      }
+
+      tr:nth-child(even) {
+        background-color: #ffffff;
+      }
+
+      th {
+        background-color: black;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="content"></div>
+    <script>
+      const studentGrades = [
+        ["B1001714", 75, "W", 80, 85, 80, 70, 60, 95],
+        ["B1001752", 65, 80, 70, "W", 90, "", 70, 95],
+        ["B1001760", "W", 90, 55, 55, 80, 75, 85, 95],
+        ["B1001770", 65, 75, 60, "W", "W", "", 55, 95],
+        ["B1001725", 70, "", 95, "", 80, "W", 85, 90],
+        ["B1001778", 95, 95, 90, 85, 80, "", 85, 90],
+        ["B1001793", 95, 65, 55, "", 65, "", "", 90],
+        ["B1001799", "W", 65, 60, 60, 55, 80, 85, 85],
+        ["B1001755", 70, 90, 90, "W", 65, 95, "W", 80],
+        ["B1001721", 85, "", 55, 85, 70, 90, 55, 75],
+        ["B1001728", 95, 95, 90, 85, 80, 85, 90, "W"],
+        ["B1001735", 65, 70, "", 85, "W", 95, 75, 80],
+        ["B1001743", 55, "W", 80, 60, 80, 80, "W", 75],
+        ["B1001782", 80, 55, 80, 80, "", 70, 60, 70],
+        ["B1001784", 55, "W", 95, 60, "", 65, 65, 70],
+        ["B1001789", 95, 55, 90, 80, 55, 90, "W", 70],
+        ["B1001773", 65, 60, 65, 55, 75, "W", 60, 60],
+        ["B1001732", 65, 60, 65, "", 80, 75, "W", ""],
+        ["B1001733", 95, 60, 75, "", 85, "W", 70, ""],
+        ["B1001736", 80, 90, 85, "", 75, 95, 70, "W"],
+        ["B1001740", 75, 65, 75, 95, 65, "", 60, "W"],
+        ["B1001771", 65, 90, 60, "W", "W", 75, 75, 75],
+        ["B1001769", "W", 95, "W", 90, 80, 80, "", 65],
+        ["B1001741", 65, 55, "", 85, 95, 75, 60, 60],
+        ["B1001759", 85, 70, 70, 65, "W", 70, 75, 60],
+        ["B1001774", 95, 70, 60, 75, "", 75, "", 60],
+        ["B1001795", "W", 75, 95, 85, "", 80, 85, 60],
+        ["B1001756", 90, "", 65, 65, "", 85, "W", 55],
+        ["B1001754", 65, 80, 95, 75, 75, 75, 95, ""],
+        ["B1001781", 80, "W", 70, 90, 80, 85, "W", ""]
+      ];
+
+      var credits = [3, 3, 3, 3, 3, 2, 2, 2];
+      var courseTitles = [];
+
+      for (i = 1; i <= 8; i++) {
+        courseTitles.push("Course " + i);
+      }
+      var columns = ["student ID"].concat(courseTitles, "Average");
+
+      displayGrades(studentGrades);
+
+      function displayGrades(tableData) {
+        var datarows = createDataRows(tableData);
+        htmlStr = arr2dToHtmlTable(datarows, columns, "Grades Table - B1");
+        document.getElementById("content").innerHTML += htmlStr;
+      }
+
+      function createDataRows(arr2d) {
+        var rows2d = [];
+        for (let i = 0, dlen = arr2d.length; i < dlen; i++) {
+          var row = [];
+          var scores = arr2d[i].slice(1);
+          var id = arr2d[i][0];
+          var stuSum = 0;
+          var stuAvg = 0;
+          var totalCredits = 0;
+          for (j = 0, slen = scores.length; j < slen; j++) {
+            if (isNumeric(scores[j])) {
+              stuSum += scores[j] * credits[j];
+              totalCredits += credits[j];
+            } else {
+              continue;
+            }
+          }
+
+          stuAvg = (stuSum / totalCredits).toFixed(2); // get student average
+          row = [id].concat(scores, stuAvg); // form a new row with id, scores, ave
+          rows2d.push(row);
+        }
+        // assume a, b are 1d arry
+        rows2d.sort(function (a, b) {
+          return b[9] - a[9] || a[0] > b[0];
+        });
+        // alternative new sort
+        rows2d.sort((a, b) =>
+          b[9] > a[9] ? 1 : b[9] == a[9] ? (a[0] > b[0] ? 1 : -1) : -1
+        );
+        console.table(rows2d);
+        return rows2d;
+      }
+
+      function arr2dToHtmlTable(datarows, columns, capString) {
+        var tableHtml = "<table>\n";
+        var thStr = "",
+          trStr = "";
+        var rowNum = datarows.length;
+
+        tableHtml += "<caption>" + capString + "</caption>";
+        if (columns.length > 0) {
+          thStr += "<tr><th>";
+          thStr += columns.join("</th><th>");
+          thStr += "</th></tr>\n";
+          tableHtml += thStr;
+        }
+
+        for (var i = 0; i < rowNum; i++) {
+          trStr = "<tr><td>"; // initialize a new row
+          trStr += datarows[i].join("</td><td>");
+          trStr += "</td></tr>\n"; // end this row
+          tableHtml += trStr;
+        }
+
+        tableHtml += "</table>\n";
+        return tableHtml;
+      }
+
+      function isNumeric(n) {
+        return typeof n === "number" && isFinite(n);
+      }
+    </script>
+  </body>
+</html>

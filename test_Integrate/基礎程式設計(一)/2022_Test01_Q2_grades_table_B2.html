@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grades Table B2</title>
+    <style>
+      div {
+        width: 80%;
+        margin: 1% auto;
+      }
+      table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      td,
+      th {
+        border: 1px solid #cccccc;
+        text-align: right;
+        padding: 6px;
+      }
+
+      tr:nth-child(odd) {
+        background-color: #e0e0e0;
+      }
+
+      tr:nth-child(even) {
+        background-color: #ffffff;
+      }
+
+      th {
+        background-color: black;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="content"></div>
+
+    <script>
+      const studentGrades = [
+        ["B2001727", 55, "W", 75, 85, 90, "W", 55, 95],
+        ["B2001736", 90, "", "", 70, 90, 85, 90, 90],
+        ["B2001772", 65, "", 55, 70, 70, 65, 95, 85],
+        ["B2001705", "", 60, "", 95, 65, 95, 95, 80],
+        ["B2001707", 55, 90, "W", 80, 65, "", 80, 80],
+        ["B2001761", 70, 55, 80, "W", "", 55, "W", 80],
+        ["B2001794", 65, 85, 95, "W", 60, "", 55, 75],
+        ["B2001774", "W", 55, "", 60, 60, 55, 70, 70],
+        ["B2001733", 65, 60, "", 55, 60, "W", 85, 65],
+        ["B2001734", "", 60, 55, "W", 55, 95, "", 65],
+        ["B2001711", "W", "W", 60, 70, 60, "W", 65, 60],
+        ["B2001741", 60, "", 55, 75, 90, "", 75, 60],
+        ["B2001777", 70, 65, "W", 75, 95, 90, 90, 60],
+        ["B2001706", 65, 75, "", 75, 80, 75, 55, ""],
+        ["B2001710", 55, 90, 60, 85, 85, 90, 95, ""],
+        ["B2001718", 65, 75, "W", 55, 85, 75, 80, "W"],
+        ["B2001751", 85, 75, "", 70, "W", 80, 55, "W"],
+        ["B2001753", 95, 55, 85, 85, 80, 85, 90, "W"],
+        ["B2001787", 75, 60, 70, 80, 85, 85, "W", ""]
+      ];
+
+      var credits = [3, 3, 3, 3, 3, 2, 2, 2];
+      var courseTitles = [];
+      var wdlCounts = []; // 期中退選人數陣列 withdrawl
+      var selCounts = []; // 期初選課人數陣列 selection
+      for (i = 1; i <= 8; i++) {
+        courseTitles.push("Course " + i);
+        wdlCounts.push(0);
+        selCounts.push(0);
+      }
+
+      var columns = ["student ID"].concat(courseTitles, "Average");
+
+      displayGrades(studentGrades);
+
+      function displayGrades(tableData) {
+        var datarows = createDataRows(tableData);
+        htmlStr = arr2dToHtmlTable(datarows, columns, "Grades Table - B2");
+        document.getElementById("content").innerHTML += htmlStr;
+      }
+
+      function createDataRows(arr2d) {
+        var rows2d = [];
+        for (let i = 0, dlen = arr2d.length; i < dlen; i++) {
+          var row = [];
+          var scores = arr2d[i].slice(1);
+          var id = arr2d[i][0];
+          var stuSum = 0;
+          var stuAvg = 0;
+          var totalCredits = 0;
+          for (j = 0, slen = scores.length; j < slen; j++) {
+            if (isNumeric(scores[j])) {
+              stuSum += scores[j] * credits[j];
+              totalCredits += credits[j];
+              selCounts[j] += 1;
+            } else if (scores[j] == "W") {
+              wdlCounts[j] += 1;
+              selCounts[j] += 1;
+            } else {
+              continue;
+            }
+          }
+
+          stuAvg = (stuSum / totalCredits).toFixed(2); // get student average
+          row = [id].concat(scores, stuAvg); // form a new row with id, scores, ave
+          rows2d.push(row);
+        }
+        // assume a, b are 1d arry
+        rows2d.sort(function (a, b) {
+          return b[9] - a[9] || a[0] > b[0];
+        });
+        // alternative new sort
+        rows2d.sort((a, b) =>
+          b[9] > a[9] ? 1 : b[9] == a[9] ? (a[0] > b[0] ? 1 : -1) : -1
+        );
+        console.table(rows2d);
+        // Add
+        row = ["停修比例"];
+        for (j = 0; j < wdlCounts.length; j++) {
+          row.push(((wdlCounts[j] / selCounts[j]) * 100).toFixed(2)+ '%');
+        }
+        row.push("");
+        rows2d.push(row);
+        return rows2d;
+      }
+
+      function arr2dToHtmlTable(datarows, columns, capString) {
+        var tableHtml = "<table>\n";
+        var thStr = "",
+          trStr = "";
+        var rowNum = datarows.length;
+
+        tableHtml += "<caption>" + capString + "</caption>";
+        if (columns.length > 0) {
+          thStr += "<tr><th>";
+          thStr += columns.join("</th><th>");
+          thStr += "</th></tr>\n";
+          tableHtml += thStr;
+        }
+
+        for (var i = 0; i < rowNum; i++) {
+          trStr = "<tr><td>"; // initialize a new row
+          trStr += datarows[i].join("</td><td>");
+          trStr += "</td></tr>\n"; // end this row
+          tableHtml += trStr;
+        }
+
+        tableHtml += "</table>\n";
+        return tableHtml;
+      }
+
+      function isNumeric(n) {
+        return typeof n === "number" && isFinite(n);
+      }
+    </script>
+  </body>
+</html>
